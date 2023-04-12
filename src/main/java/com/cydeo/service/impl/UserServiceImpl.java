@@ -2,19 +2,24 @@ package com.cydeo.service.impl;
 
 import com.cydeo.dto.UserDTO;
 import com.cydeo.entity.User;
+import com.cydeo.mapper.UserMapper;
 import com.cydeo.repository.UserRepository;
 import com.cydeo.service.UserService;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+    private final UserMapper userMapper;
 
-    public UserServiceImpl(UserRepository userRepository) {
+    public UserServiceImpl(UserRepository userRepository, UserMapper userMapper) {
         this.userRepository = userRepository;
+        this.userMapper = userMapper;
     }
 
     @Override
@@ -22,21 +27,37 @@ public class UserServiceImpl implements UserService {
 
         List<User> userList = userRepository.findAll(Sort.by("firstName"));
 
-        return null;
+        return userList.stream().map(userMapper::convertToDto).collect(Collectors.toList());
     }
 
     @Override
     public UserDTO findByUserName(String username) {
-        return null;
+
+        User user = userRepository.findByUserName(username);
+
+        return userMapper.convertToDto(user);
     }
 
     @Override
     public void save(UserDTO user) {
-
+        userRepository.save(userMapper.convertToEntity(user));
     }
 
     @Override
     public void deleteByUserName(String username) {
 
+    }
+
+    @Override
+    public UserDTO update(UserDTO user) {
+        //Find the current user first
+        User user1 = userRepository.findByUserName(user.getUserName()); //has id
+        //Map update user dto to entity object
+        User convertedUser = userMapper.convertToEntity(user); // hasn't id yet
+        //set id to the converted object
+        convertedUser.setId(user1.getId());
+        //save the updated user in the db
+        userRepository.save(convertedUser);
+        return findByUserName(user.getUserName());
     }
 }
