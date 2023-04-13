@@ -6,10 +6,11 @@ import com.cydeo.mapper.ProjectMapper;
 import com.cydeo.repository.ProjectRepository;
 import com.cydeo.service.ProjectService;
 import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.stream.Collectors;
-
+@Service
 public class ProjectServiceImp implements ProjectService {
 
     private final ProjectRepository projectRepository;
@@ -36,6 +37,9 @@ public class ProjectServiceImp implements ProjectService {
 
     @Override
     public void save(ProjectDTO dto) {
+
+        Project project = projectMapper.convertToEntity(dto);
+        projectRepository.save(project);
 
     }
 
